@@ -1,11 +1,21 @@
 #!/usr/bin/env python3
 
+import pathlib
+
+
+############
+# FUNCTION #
+############
+
+def resolve_path(x):
+    return str(pathlib.Path(x).resolve())
+
 ###########
 # GLOBALS #
 ###########
 
-ref_genome = 'data/vvul_hic25.fasta'
-query_genome = 'data/vger_k71.fasta'
+ref_genome = resolve_path('data/vvul_hic25.fasta')
+query_genome = resolve_path('data/vger_k71.fasta')
 
 # containers
 mummer_container = 'shub://TomHarrop/singularity-containers:mummer_4.0.0beta2'
