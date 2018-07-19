@@ -31,7 +31,7 @@ rule whole_genome_alignment:
     shell:
         'cd {params.wd} || exit 1 ; '
         'nucmer '
-        '-maxmatch '
+        '--maxmatch '
         '-p output '
         '{input.ref} '
         '{input.query} '
