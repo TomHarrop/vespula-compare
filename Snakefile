@@ -31,8 +31,8 @@ rule target:
 
 rule whole_genome_alignment:
     input:
-        ref = 'output/filtered_genomes/vvul_hic25.fasta',
-        query = 'output/filtered_genomes/vger_k71.fasta'
+        ref = resolve_path('output/filtered_genomes/vvul_hic25.fasta'),
+        query = resolve_path('output/filtered_genomes/vger_k71.fasta')
     output:
         'output/nucmer/output.delta'
     threads:
@@ -66,7 +66,7 @@ rule filter_short_contigs:
         'reformat.sh '
         'in={input} '
         'out={output} '
-        'minlength=1000 '
+        'minlength=10000 '
         '2> {log}'
 
 
