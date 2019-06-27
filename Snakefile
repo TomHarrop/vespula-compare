@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import pathlib
+import pathlib2
 import multiprocessing
 
 ############
