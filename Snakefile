@@ -21,9 +21,7 @@ genome_files = {
     'vvul_scaffolded': 'data/vvul_scaffolded.fasta'}
 
 # containers
-mummer_container = 'shub://TomHarrop/singularity-containers:mummer_4.0.0beta2'
 bbduk_container = 'shub://TomHarrop/singularity-containers:bbmap_38.50b'
-minimap_container = 'shub://TomHarrop/singularity-containers:minimap2_2.11r797'
 busco_container = 'shub://TomHarrop/singularity-containers:busco_3.0.2'
 
 
@@ -33,7 +31,7 @@ busco_container = 'shub://TomHarrop/singularity-containers:busco_3.0.2'
 
 rule target:
     input:
-        expand('output/010_busco/{assembly}/full_table_{assembly}.tsv',
+        expand('output/010_busco/run_{assembly}/full_table_{assembly}.tsv',
                assembly=list(genome_files.keys()))
 
 rule busco_genome:
