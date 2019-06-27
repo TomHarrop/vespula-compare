@@ -32,6 +32,8 @@ busco_container = 'shub://TomHarrop/singularity-containers:busco_3.0.2'
 rule target:
     input:
         expand('output/010_busco/run_{assembly}/full_table_{assembly}.tsv',
+               assembly=list(genome_files.keys())),
+        expand('output/020_stats/{assembly}.tsv',
                assembly=list(genome_files.keys()))
 
 rule busco_genome:
@@ -64,6 +66,26 @@ rule busco_genome:
         '--species honeybee1 '
         '--mode genome '
         '&> {log}'
+
+rule assembly_stats:
+    input:
+        'data/{assembly}.fasta',
+    output:
+        'output/020_stats/{assembly}.tsv'
+    log:
+        'output/logs/stats_{assembly}.log'
+    threads:
+        1
+    singularity:
+        bbduk_container
+    shell:
+        'stats.sh '
+        'in={input} '
+        'minscaf=1000 '
+        'format=3 '
+        'threads={threads} '
+        '> {output} '
+        '2> {log}'
 
 rule generic_gunzip:
     input:
