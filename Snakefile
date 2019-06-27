@@ -1,26 +1,31 @@
 #!/usr/bin/env python3
 
 import pathlib
-
+import multiprocessing
 
 ############
 # FUNCTION #
 ############
 
 def resolve_path(x):
-    return str(pathlib.Path(x).resolve())
+    return str(pathlib2.Path(x).resolve())
 
 ###########
 # GLOBALS #
 ###########
 
-ref_genome = resolve_path('data/vvul_hic25.fasta')
-query_genome = resolve_path('data/vger_k71.fasta')
+genome_files = {
+    'vger_shortread': 'data/vger_shortread.fasta',
+    'vvul_shortread': 'data/vvul_shortread.fasta',
+    'vger_scaffolded': 'data/vger_scaffolded.fasta.gz',
+    'vvul_scaffolded': 'data/vvul_scaffolded.fasta.gz'}
 
 # containers
 mummer_container = 'shub://TomHarrop/singularity-containers:mummer_4.0.0beta2'
-bbduk_container = 'shub://TomHarrop/singularity-containers:bbmap_38.00'
+bbduk_container = 'shub://TomHarrop/singularity-containers:bbmap_38.50b'
 minimap_container = 'shub://TomHarrop/singularity-containers:minimap2_2.11r797'
+busco_container = 'shub://TomHarrop/singularity-containers:busco_3.0.2'
+
 
 #########
 # RULES #
@@ -28,7 +33,41 @@ minimap_container = 'shub://TomHarrop/singularity-containers:minimap2_2.11r797'
 
 rule target:
     input:
-        'output/minimap/aln.sam'
+        expand('output/010_busco/{assembly}/full_table_{assembly}.tsv',
+               assembly=list(genome_files.keys()))
+
+rule busco_genome:
+    input:
+        fasta = 'data/{assembly}.fasta',
+        lineage = 'data/lineages/hymenoptera_odb9'
+    output:
+        ('output/010_busco/{assembly}/'
+         'full_table_{assembly}.tsv')
+    log:
+        str(pathlib2.Path(('output/logs/060_busco/'
+                           'busco_{assembly}.log')).resolve())
+    params:
+        wd = 'output/010_busco',
+        name = '{assembly}',
+        fasta = lambda wildcards, input: resolve_path(input.fasta),
+        lineage = lambda wildcards, input: resolve_path(input.lineage)
+    threads:
+        multiprocessing.cpu_count()
+    singularity:
+        busco_container
+    shell:
+        'cd {params.wd} || exit 1 ; '
+        'run_BUSCO.py '
+        '--force '
+        '--in {params.fasta} '
+        '--out {params.name} '
+        '--lineage {params.lineage} '
+        '--cpu {threads} '
+        '--species honeybee1 '
+        '--mode genome '
+        '&> {log}'    
+
+
 
 rule wga_minimap:
     input:
@@ -51,8 +90,6 @@ rule wga_minimap:
         '{input.query} '
         '> {output.sam} '
         '2> {log} '
-
-
 
 rule whole_genome_alignment:
     input:
@@ -95,4 +132,13 @@ rule filter_short_contigs:
         '2> {log}'
 
 
+rule generic_gunzip:
+    input:
+        '{filepath}/{filename}.gz'
+    output:
+        temp('{filepath}/{filename}')
+    singularity:
+        bbduk_container
+    shell:
+        'gunzip -c {input} > {output}'
 
