@@ -39,7 +39,7 @@ rule target:
 rule busco_genome:
     input:
         fasta = 'data/{assembly}.fasta',
-        lineage = 'data/lineages/hymenoptera_odb9'
+        lineage = 'data/hymenoptera_odb9'
     output:
         ('output/010_busco/{assembly}/'
          'full_table_{assembly}.tsv')
