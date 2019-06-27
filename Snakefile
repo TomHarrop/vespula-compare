@@ -136,7 +136,7 @@ rule generic_gunzip:
     input:
         '{filepath}.gz'
     output:
-        '{filepath}'
+        temp('{filepath}')
     wildcard_constraints:
         filepath = '.*(?!gz)$'      # not gz files
     singularity:
