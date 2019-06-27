@@ -65,7 +65,7 @@ rule busco_genome:
         '--cpu {threads} '
         '--species honeybee1 '
         '--mode genome '
-        '&> {log}'    
+        '&> {log}'
 
 
 
@@ -134,9 +134,11 @@ rule filter_short_contigs:
 
 rule generic_gunzip:
     input:
-        '{filepath}/{filename}.gz'
+        '{filepath}/{filename}.{ext}.gz'
     output:
-        temp('{filepath}/{filename}')
+        temp('{filepath}/{filename}.{ext}')
+    wildcard_constraints:
+        ext = '(?!gz)'      # don't recurse
     singularity:
         bbduk_container
     shell:
