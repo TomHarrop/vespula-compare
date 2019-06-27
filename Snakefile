@@ -134,9 +134,9 @@ rule filter_short_contigs:
 
 rule generic_gunzip:
     input:
-        '{filepath}/{filename}.{ext}.gz'
+        '{filepath}.{ext}.gz'
     output:
-        '{filepath}/{filename}.{ext}'
+        '{filepath}.{ext}'
     wildcard_constraints:
         ext = '(?!gz)'      # don't recurse
     singularity:
