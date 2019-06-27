@@ -17,8 +17,8 @@ def resolve_path(x):
 genome_files = {
     'vger_shortread': 'data/vger_shortread.fasta',
     'vvul_shortread': 'data/vvul_shortread.fasta',
-    'vger_scaffolded': 'data/vger_scaffolded.fasta.gz',
-    'vvul_scaffolded': 'data/vvul_scaffolded.fasta.gz'}
+    'vger_scaffolded': 'data/vger_scaffolded.fasta',
+    'vvul_scaffolded': 'data/vvul_scaffolded.fasta'}
 
 # containers
 mummer_container = 'shub://TomHarrop/singularity-containers:mummer_4.0.0beta2'
@@ -134,11 +134,11 @@ rule filter_short_contigs:
 
 rule generic_gunzip:
     input:
-        '{filepath}.{ext}.gz'
+        '{filepath}.gz'
     output:
-        '{filepath}.{ext}'
+        '{filepath}'
     wildcard_constraints:
-        ext = '(?!gz)'      # don't recurse
+        filepath = '.*(?!gz)$'      # not gz files
     singularity:
         bbduk_container
     shell:
