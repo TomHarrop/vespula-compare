@@ -23,6 +23,7 @@ genome_files = {
 # containers
 bbduk_container = 'shub://TomHarrop/singularity-containers:bbmap_38.50b'
 busco_container = 'shub://TomHarrop/singularity-containers:busco_3.0.2'
+kraken_container = 'shub://TomHarrop/singularity-containers:kraken_2.0.7beta'
 
 
 #########
@@ -34,7 +35,9 @@ rule target:
         expand('output/010_busco/run_{assembly}/full_table_{assembly}.tsv',
                assembly=list(genome_files.keys())),
         expand('output/020_stats/{assembly}.tsv',
-               assembly=list(genome_files.keys()))
+               assembly=list(genome_files.keys())),
+        expand('output/030_kraken/{assembly}/kraken_out.txt',
+               assembly=list(genome_files.keys())),
 
 rule busco_genome:
     input:
@@ -86,6 +89,31 @@ rule assembly_stats:
         'threads={threads} '
         '> {output} '
         '2> {log}'
+
+
+rule kraken:
+    input:
+        fasta = 'data/{assembly}.fasta',
+        db = 'data/20180917-krakendb'
+    output:
+        out = 'output/030_kraken/{assembly}/kraken_out.txt',
+        report = 'output/030_kraken/{assembly}/kraken_report.txt'
+    log:
+        'output/logs/030_kraken/{assembly}_kraken.log'
+    threads:
+        multiprocessing.cpu_count()
+    singularity:
+        kraken_container
+    shell:
+        'kraken2 '
+        '--threads {threads} '
+        '--db {input.db} '
+        '--report-zero-counts '
+        '--output {output.out} '
+        '--report {output.report} '
+        '--use-names '
+        '{input.fasta} '
+        '&> {log}'
 
 rule generic_gunzip:
     input:
