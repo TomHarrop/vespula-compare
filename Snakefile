@@ -136,7 +136,7 @@ rule generic_gunzip:
     input:
         '{filepath}/{filename}.{ext}.gz'
     output:
-        temp('{filepath}/{filename}.{ext}')
+        '{filepath}/{filename}.{ext}'
     wildcard_constraints:
         ext = '(?!gz)'      # don't recurse
     singularity:
