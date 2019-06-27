@@ -20,6 +20,7 @@ query_genome = resolve_path('data/vger_k71.fasta')
 # containers
 mummer_container = 'shub://TomHarrop/singularity-containers:mummer_4.0.0beta2'
 bbduk_container = 'shub://TomHarrop/singularity-containers:bbmap_38.00'
+minimap_container = 'shub://TomHarrop/singularity-containers:minimap2_2.11r797'
 
 #########
 # RULES #
@@ -27,7 +28,31 @@ bbduk_container = 'shub://TomHarrop/singularity-containers:bbmap_38.00'
 
 rule target:
     input:
-        'output/nucmer/output.delta'
+        'output/minimap/aln.sam'
+
+rule wga_minimap:
+    input:
+        ref = 'output/filtered_genomes/vvul_hic25.fasta',
+        query = 'output/filtered_genomes/vger_k71.fasta'
+    output:
+        sam = 'output/minimap/aln.sam'
+    threads:
+        20
+    singularity:
+        minimap_container
+    log:
+        'output/minimap/minimap.log'
+    shell:
+        'minimap2 '
+        '-a '
+        '-x asm20 '
+        '-t {threads} '
+        '{input.ref} '
+        '{input.query} '
+        '> {output.sam} '
+        '2> {log} '
+
+
 
 rule whole_genome_alignment:
     input:
