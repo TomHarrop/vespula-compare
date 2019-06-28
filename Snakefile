@@ -34,8 +34,8 @@ rule target:
     input:
         # expand('output/010_busco/run_{assembly}/full_table_{assembly}.tsv',
         #        assembly=list(genome_files.keys())),
-        expand('output/020_stats/{assembly}.tsv',
-               assembly=list(genome_files.keys())),
+        # expand('output/020_stats/{assembly}.tsv',
+        #        assembly=list(genome_files.keys())),
         expand('output/030_kraken/{assembly}/kraken_out.txt',
                assembly=list(genome_files.keys())),
 
@@ -119,7 +119,7 @@ rule generic_gunzip:
     input:
         '{filepath}.gz'
     output:
-        temp('{filepath}')
+        '{filepath}'
     wildcard_constraints:
         filepath = '.*(?!gz)$'      # not gz files
     singularity:
