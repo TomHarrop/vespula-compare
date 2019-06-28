@@ -32,8 +32,8 @@ kraken_container = 'shub://TomHarrop/singularity-containers:kraken_2.0.7beta'
 
 rule target:
     input:
-        expand('output/010_busco/run_{assembly}/full_table_{assembly}.tsv',
-               assembly=list(genome_files.keys())),
+        # expand('output/010_busco/run_{assembly}/full_table_{assembly}.tsv',
+        #        assembly=list(genome_files.keys())),
         expand('output/020_stats/{assembly}.tsv',
                assembly=list(genome_files.keys())),
         expand('output/030_kraken/{assembly}/kraken_out.txt',
