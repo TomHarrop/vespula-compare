@@ -108,7 +108,7 @@ rule kraken:
         'kraken2 '
         '--threads {threads} '
         '--db {input.db} '
-        '--report-zero-counts '
+        # '--report-zero-counts '
         '--output {output.out} '
         '--report {output.report} '
         '--use-names '
