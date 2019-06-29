@@ -10,6 +10,9 @@ import multiprocessing
 def resolve_path(x):
     return str(pathlib2.Path(x).resolve())
 
+def assembly_fasta(wildcards):
+    return(genome_files[wildcards.assembly])
+
 ###########
 # GLOBALS #
 ###########
@@ -18,7 +21,9 @@ genome_files = {
     'vger_shortread': 'data/vger_shortread.fasta',
     'vvul_shortread': 'data/vvul_shortread.fasta',
     'vger_scaffolded': 'data/vger_scaffolded.fasta',
-    'vvul_scaffolded': 'data/vvul_scaffolded.fasta'}
+    'vvul_scaffolded': 'data/vvul_scaffolded.fasta',
+    'vger_scaffoldsonly': '000_scaffolds-only/vger_scaffoldsonly.fasta',
+    'vvul_scaffoldsonly': '000_scaffolds-only/vvul_scaffoldsonly.fasta'}
 
 # containers
 bbduk_container = 'shub://TomHarrop/singularity-containers:bbmap_38.50b'
@@ -32,16 +37,16 @@ kraken_container = 'shub://TomHarrop/singularity-containers:kraken_2.0.7beta'
 
 rule target:
     input:
-        # expand('output/010_busco/run_{assembly}/full_table_{assembly}.tsv',
-        #        assembly=list(genome_files.keys())),
-        # expand('output/020_stats/{assembly}.tsv',
-        #        assembly=list(genome_files.keys())),
+        expand('output/010_busco/run_{assembly}/full_table_{assembly}.tsv',
+               assembly=list(genome_files.keys())),
+        expand('output/020_stats/{assembly}.tsv',
+               assembly=list(genome_files.keys())),
         expand('output/030_kraken/{assembly}/kraken_out.txt',
                assembly=list(genome_files.keys())),
 
 rule busco_genome:
     input:
-        fasta = 'data/{assembly}.fasta',
+        fasta = assembly_fasta,
         lineage = 'data/hymenoptera_odb9'
     output:
         ('output/010_busco/run_{assembly}/'
@@ -72,7 +77,7 @@ rule busco_genome:
 
 rule assembly_stats:
     input:
-        'data/{assembly}.fasta',
+        assembly_fasta,
     output:
         'output/020_stats/{assembly}.tsv'
     log:
@@ -93,7 +98,7 @@ rule assembly_stats:
 
 rule kraken:
     input:
-        fasta = 'data/{assembly}.fasta',
+        fasta = assembly_fasta,
         db = 'data/20180917-krakendb'
     output:
         out = 'output/030_kraken/{assembly}/kraken_out.txt',
@@ -114,6 +119,25 @@ rule kraken:
         '--use-names '
         '{input.fasta} '
         '&> {log}'
+
+# generic rules
+rule filter_scaffolds:
+    input:
+        'data/{assembly}_scaffolded.fasta'
+    output:
+        '000_scaffolds-only/{assembly}_scaffoldsonly.fasta'
+    singularity:
+        bbduk_container
+    log:
+        'output/logs/filter_scaffolds_{assembly}.log'
+    shell:
+        'filterbyname.sh '
+        'in={input} '
+        'out={output} '
+        'names=Chr '
+        'include=t '
+        'substring=t '
+        '2> {log}'
 
 rule generic_gunzip:
     input:
