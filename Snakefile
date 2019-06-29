@@ -22,8 +22,8 @@ genome_files = {
     'vvul_shortread': 'data/vvul_shortread.fasta',
     'vger_scaffolded': 'data/vger_scaffolded.fasta',
     'vvul_scaffolded': 'data/vvul_scaffolded.fasta',
-    'vger_scaffoldsonly': '000_scaffolds-only/vger_scaffoldsonly.fasta',
-    'vvul_scaffoldsonly': '000_scaffolds-only/vvul_scaffoldsonly.fasta'}
+    'vger_scaffoldsonly': 'output/000_scaffolds-only/vger_scaffoldsonly.fasta',
+    'vvul_scaffoldsonly': 'output/000_scaffolds-only/vvul_scaffoldsonly.fasta'}
 
 # containers
 bbduk_container = 'shub://TomHarrop/singularity-containers:bbmap_38.50b'
@@ -125,7 +125,7 @@ rule filter_scaffolds:
     input:
         'data/{assembly}_scaffolded.fasta'
     output:
-        '000_scaffolds-only/{assembly}_scaffoldsonly.fasta'
+        'output/000_scaffolds-only/{assembly}_scaffoldsonly.fasta'
     singularity:
         bbduk_container
     log:
