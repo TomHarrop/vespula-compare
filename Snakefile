@@ -29,7 +29,7 @@ genome_files = {
 bbduk_container = 'shub://TomHarrop/singularity-containers:bbmap_38.50b'
 busco_container = 'shub://TomHarrop/singularity-containers:busco_3.0.2'
 kraken_container = 'shub://TomHarrop/singularity-containers:kraken_2.0.7beta'
-
+bioc_container = 'shub://TomHarrop/singularity-containers:bioconductor_3.9'
 
 #########
 # RULES #
@@ -37,12 +37,26 @@ kraken_container = 'shub://TomHarrop/singularity-containers:kraken_2.0.7beta'
 
 rule target:
     input:
-        expand('output/010_busco/run_{assembly}/full_table_{assembly}.tsv',
-               assembly=list(genome_files.keys())),
-        expand('output/020_stats/{assembly}.tsv',
-               assembly=list(genome_files.keys())),
+        'output/040_combined/parsed_stats.csv',
         expand('output/030_kraken/{assembly}/kraken_out.txt',
                assembly=list(genome_files.keys())),
+
+rule combine_busco_and_stats:
+    input:
+        busco_files = expand(
+            'output/010_busco/run_{assembly}/full_table_{assembly}.tsv',
+            assembly=list(genome_files.keys())),
+        stats_files = expand(
+            'output/020_stats/{assembly}.tsv',
+            assembly=list(genome_files.keys()))
+    output:
+        parsed_stats = 'output/040_combined/parsed_stats.csv'
+    log:
+        'output/logs/combine_busco_and_stats.log'
+    singularity:
+        bioc_container
+    script:
+        'src/combine_busco_and_stats.R'
 
 rule busco_genome:
     input:

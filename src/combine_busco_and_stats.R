@@ -1,16 +1,24 @@
 #!/usr/bin/env Rscript
 
+log <- file(snakemake@log[[1]], open = "wt")
+sink(log, type = "message")
+sink(log, type = "output", append = TRUE)
+
 library(data.table)
 
-busco_files <- list.files("output/010_busco",
-           pattern = 'full_table_.*.tsv',
-           recursive = TRUE,
-           full.names = TRUE)
+busco_files <- snakemake@input[["busco_files"]]
+stats_files <- snakemake@input[["stats_files"]]
+parsed_stats_file <- snakemake@output[["parsed_stats"]]
 
-stats_files <- list.files("output/020_stats",
-           pattern = '.tsv',
-           recursive = TRUE,
-           full.names = TRUE)
+# dev
+# busco_files <- list.files("output/010_busco",
+#            pattern = 'full_table_.*.tsv',
+#            recursive = TRUE,
+#            full.names = TRUE)
+# stats_files <- list.files("output/020_stats",
+#            pattern = '.tsv',
+#            recursive = TRUE,
+#            full.names = TRUE)
 
 names(busco_files) <- gsub("full_table_(.*).tsv", "\\1", basename(busco_files))
 busco_list <- lapply(busco_files, fread, skip = 4, fill = TRUE)
@@ -33,17 +41,6 @@ full_assemblies <- dcast(complete_by_assembly,
       value.var = "pct_by_status")
 full_assemblies[, variable := "busco_complete"]
 
-# busco (scaffolds only)
-complete_in_main_scaffolds <- busco_results[!is.na(busco_hit_on_chr), .(
-    pct_by_status = 100 * length(unique(`# Busco id`)) / unique(n_buscos)
-), by = .(Status, species, assembly_type, busco_hit_on_chr)][
-    Status == "Complete" & busco_hit_on_chr == TRUE]
-scaffolds_only <- dcast(complete_in_main_scaffolds,
-      assembly_type ~ species,
-      value.var = "pct_by_status")
-scaffolds_only[, variable := "busco_complete"]
-scaffolds_only[, assembly_type := "scaffoldsonly"]
-
 # parse stats
 names(stats_files) <- sub(".tsv", "", basename(stats_files))
 stats_list <- lapply(stats_files, fread)
@@ -65,10 +62,16 @@ sum_stats <- dcast(stats_long, assembly_type + variable ~ species)
 
 # join busco and stats
 all_stats <- rbindlist(list(
-    sum_stats, full_assemblies, scaffolds_only
+    sum_stats, full_assemblies
 ), use.names = TRUE)
 type_order <- c("shortread", "scaffolded", "scaffoldsonly")
 var_order <- c("scaf_mbp", "n_scaffolds", "L50_kbp", "busco_complete")
 all_stats[, assembly_type := factor(assembly_type, levels = type_order)]
 all_stats[, variable := factor(variable, levels = var_order)]
 setkey(all_stats, variable, assembly_type)
+
+# write output
+fwrite(all_stats, parsed_stats_file)
+
+# log
+sessionInfo()
